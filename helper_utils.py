@@ -1,9 +1,11 @@
 import chromadb
+from chromadb.config import Settings
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter, SentenceTransformersTokenTextSplitter
 import numpy as np
 from pypdf import PdfReader
 from tqdm import tqdm
+
 
 
 def _read_pdf(filename):
@@ -37,7 +39,9 @@ def load_chroma(filename, collection_name, embedding_function):
     texts = _read_pdf(filename)
     chunks = _chunk_texts(texts)
 
-    chroma_cliet = chromadb.Client()
+    chroma_cliet = chromadb.Client(settings=Settings(allow_reset=True))
+    chroma_cliet.reset()
+
     chroma_collection = chroma_cliet.create_collection(name=collection_name, embedding_function=embedding_function)
 
     ids = [str(i) for i in range(len(chunks))]
