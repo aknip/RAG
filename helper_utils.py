@@ -35,20 +35,33 @@ def _chunk_texts(texts):
     return token_split_texts
 
 
-def load_chroma(filename, collection_name, embedding_function):
+def init_chroma(filename, collection_name, embedding_function):
     texts = _read_pdf(filename)
     chunks = _chunk_texts(texts)
 
-    chroma_cliet = chromadb.Client(settings=Settings(allow_reset=True))
-    chroma_cliet.reset()
+    # chroma_client = chromadb.Client(settings=Settings(allow_reset=True))
+    chroma_client = chromadb.PersistentClient(path="./chroma_"+collection_name, settings=Settings(allow_reset=True))
+    chroma_client.reset()
 
-    chroma_collection = chroma_cliet.create_collection(name=collection_name, embedding_function=embedding_function)
+    chroma_collection = chroma_client.create_collection(name=collection_name, embedding_function=embedding_function)
 
     ids = [str(i) for i in range(len(chunks))]
 
     chroma_collection.add(ids=ids, documents=chunks)
 
     return chroma_collection
+
+
+
+def load_chroma_from_persistance(collection_name, embedding_function):
+    
+    chroma_client = chromadb.PersistentClient(path="./chroma_"+collection_name, settings=Settings(allow_reset=True))
+
+    chroma_collection = chroma_client.get_collection(name=collection_name, embedding_function=embedding_function)
+
+    return chroma_collection
+
+
 
 def word_wrap(string, n_chars=72):
     # Wrap a string at the next space after n_chars
